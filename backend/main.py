@@ -14,11 +14,18 @@ import stego
 
 app = FastAPI()
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+FRONTEND_URL_ENV = os.getenv("FRONTEND_URL", "http://localhost:5173")
+# Support comma-separated URLs in production and strip trailing slashes securely
+ALLOWED_ORIGINS = [url.strip().rstrip("/") for url in FRONTEND_URL_ENV.split(",") if url.strip()]
+
+# Always allow local development
+for local_url in ["http://localhost:5173", "http://localhost:3000"]:
+    if local_url not in ALLOWED_ORIGINS:
+        ALLOWED_ORIGINS.append(local_url)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, "http://localhost:5173", "http://localhost:3000"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

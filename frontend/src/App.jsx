@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motio
 import Lenis from 'lenis';
 import {
   Upload, Download, Key, Baseline, FileText,
-  Image as ImageIcon, Music, Video, Unlock, ShieldClose, ShieldCheck, ChevronDown, User, LogOut
+  Image as ImageIcon, Music, Video, Unlock, ShieldClose, ShieldCheck, ChevronDown, ChevronLeft, User, LogOut
 } from 'lucide-react';
 import './index.css';
 import { supabase } from './supabaseClient';
@@ -103,6 +103,8 @@ function ProcessingOverlay({ isEncoding, text }) {
 
 function App() {
   const [session, setSession] = useState(null);
+  const [step, setStep] = useState('landing');
+  const [action, setAction] = useState(null);
   const [activeTab, setActiveTab] = useState('text');
 
   useEffect(() => {
@@ -177,82 +179,99 @@ function App() {
         </div>
       </div>
 
-      <section className="hero">
-        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <h1 className="hero-title">StealthSpace</h1>
-            <p className="hero-subtitle">
-              Advanced, secure & minimal multimodal steganography suite. Hide any data seamlessly.
-            </p>
-          </motion.div>
-        </div>
+      <AnimatePresence mode="wait">
+        {step === 'landing' && (
+          <motion.div key="landing" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0, y:-20}} className="landing-wrapper">
+            <div className="landing-content">
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} className="hero-section">
+                <h1 className="hero-title">StealthSpace</h1>
+                <p className="hero-subtitle" style={{ marginBottom: '2.5rem' }}>
+                  Advanced, secure & minimal multimodal steganography suite. Hide any data seamlessly.
+                </p>
+                <button className="btn-primary" style={{ maxWidth: '250px' }} onClick={() => setStep('action')}>
+                  Get Started
+                </button>
+              </motion.div>
 
-        <motion.div
-          className="scroll-indicator"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 1 }}
-        >
-          <span>Scroll</span>
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-          >
-            <ChevronDown size={16} />
+              <motion.div className="info-grid-compact" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}>
+                <div className="info-card-clean">
+                  <h3 className="info-title-clean"><ShieldCheck size={20} color="var(--text-secondary)" /> What is Steganography?</h3>
+                  <p className="info-text-clean">
+                    It is a way to hide secret information inside an ordinary file so nobody knows it's there. 
+                    Unlike a locked safe, a steganography file just looks like a normal picture or mp3 file.
+                  </p>
+                </div>
+                <div className="info-card-clean">
+                  <h3 className="info-title-clean"><Unlock size={20} color="var(--text-secondary)" /> How it Works</h3>
+                  <p className="info-text-clean">
+                    Choose whether you want to Encode (hide data) or Decode (extract data). Then select your file type (like Text, Image, Audio, or Video). 
+                    We will seamlessly embed your secret message into the file you provide.
+                  </p>
+                </div>
+              </motion.div>
+            </div>
           </motion.div>
-        </motion.div>
-      </section>
+        )}
 
-      <section className="main-content container">
-        <motion.div
-          className="tabs-container"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="tabs">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+        {step === 'action' && (
+          <motion.div key="action" initial={{opacity:0, x:20}} animate={{opacity:1, x:0}} exit={{opacity:0, x:-20}} className="step-container container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ maxWidth: '750px', margin: '0 auto', width: '100%' }}>
+              <button className="back-btn" onClick={() => setStep('landing')}><ChevronLeft size={16}/> Back</button>
+              <h2 className="step-title">Select Operation</h2>
+              <div className="action-grid">
+                <button className="action-card" onClick={() => { setAction('encode'); setStep('type'); }}>
+                  <Unlock size={36} color="var(--text-primary)" style={{ marginBottom: '1.2rem' }} />
+                  <h3>Encode</h3>
+                  <p>Hide secret data within a file</p>
+                </button>
+                <button className="action-card" onClick={() => { setAction('decode'); setStep('type'); }}>
+                  <Baseline size={36} color="var(--text-primary)" style={{ marginBottom: '1.2rem' }} />
+                  <h3>Decode</h3>
+                  <p>Extract hidden data from a stego file</p>
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {step === 'type' && (
+          <motion.div key="type" initial={{opacity:0, x:20}} animate={{opacity:1, x:0}} exit={{opacity:0, x:-20}} className="step-container container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ maxWidth: '750px', margin: '0 auto', width: '100%' }}>
+              <button className="back-btn" onClick={() => setStep('action')}><ChevronLeft size={16}/> Back</button>
+              <h2 className="step-title">Select Medium</h2>
+              <div className="type-grid">
+                {tabs.map((tab) => (
+                  <button key={tab.id} className="type-card" onClick={() => { setActiveTab(tab.id); setStep('tool'); }}>
+                    <div style={{ transform: 'scale(1.5)', marginBottom: '1.2rem', color: 'var(--text-primary)' }}>{tab.icon}</div>
+                    <h3>{tab.label}</h3>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {step === 'tool' && (
+          <motion.div key="tool" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-20}} className="step-container container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', maxWidth: '600px', paddingTop: '6rem', paddingBottom: '6rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', alignItems: 'center' }}>
+              <button className="back-btn" onClick={() => setStep('type')} style={{ marginBottom: 0 }}><ChevronLeft size={16}/> Back to Mediums</button>
+              <button className="back-btn" style={{ color:'var(--text-secondary)', marginBottom: 0 }} onClick={() => setStep('landing')}>Start Over</button>
+            </div>
+            
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={action + activeTab}
+                initial={{ opacity: 0, scale: 0.99 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.99 }}
+                transition={{ duration: 0.2 }}
               >
-                {activeTab === tab.id && (
-                  <motion.div
-                    layoutId="tabBackground"
-                    className="tab-bg"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  {tab.icon} {tab.label}
-                </span>
-              </button>
-            ))}
-          </div>
-        </motion.div>
-
-        <div className="panels-wrapper">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, scale: 0.99 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.99 }}
-              transition={{ duration: 0.2 }}
-              className="panel-grid"
-            >
-              <EncodeSection type={activeTab} />
-              <DecodeSection type={activeTab} />
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </section>
+                {action === 'encode' ? <EncodeSection type={activeTab} /> : <DecodeSection type={activeTab} />}
+              </motion.div>
+            </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

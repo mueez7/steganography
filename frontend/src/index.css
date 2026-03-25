@@ -962,6 +962,29 @@ button, .action-card, .type-card, .spy-card {
   position: relative;
 }
 
+.auth-back-btn {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-family: 'Space Grotesk', sans-serif;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  cursor: none !important;
+}
+
+.auth-back-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
 .auth-branding-icon {
   margin-bottom: 2rem;
   width: 80px;

@@ -161,11 +161,12 @@ function App() {
       <div className="noise-overlay" />
 
       {/* App Navbar */}
-      <div className="app-navbar">
-        <div className="navbar-brand" onClick={() => { setStep('landing'); setAction(null); setIsNavOpen(false); }} style={{cursor: 'pointer'}}>
-          <ShieldCheck size={20} color="var(--text-primary)" />
-          <span className="navbar-title">StealthSpace</span>
-        </div>
+      {step !== 'auth' && (
+        <div className="app-navbar">
+          <div className="navbar-brand" onClick={() => { setStep('landing'); setAction(null); setIsNavOpen(false); }} style={{cursor: 'pointer'}}>
+            <ShieldCheck size={20} color="var(--text-primary)" />
+            <span className="navbar-title">StealthSpace</span>
+          </div>
         
         {session && (
           <div className="navbar-links">
@@ -198,6 +199,7 @@ function App() {
           </button>
         )}
       </div>
+      )}
 
       {/* Mobile Menu Overlay */}
       {session && (
@@ -331,10 +333,9 @@ function App() {
         )}
 
         {step === 'auth' && (
-          <motion.div key="auth" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="step-container container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '1rem', overflowY: 'auto' }}>
-            <div style={{ maxWidth: '900px', width: '100%', position: 'relative' }}>
-              <button className="back-btn" style={{ position: 'absolute', top: '-2.5rem', left: '0', zIndex: 11 }} onClick={() => setStep('landing')}><ChevronLeft size={16} /> Back</button>
-              <Auth />
+          <motion.div key="auth" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="step-container container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '1rem', overflowY: 'auto', position: 'relative' }}>
+            <div style={{ maxWidth: '900px', width: '100%', marginTop: '0' }}>
+              <Auth onBack={() => setStep('landing')} />
             </div>
           </motion.div>
         )}

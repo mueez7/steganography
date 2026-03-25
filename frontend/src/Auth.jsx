@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from './supabaseClient';
-import { Lock, Mail, KeyRound, ShieldClose, User, ArrowRight, Fingerprint } from 'lucide-react';
+import { Lock, Mail, KeyRound, ShieldClose, User, ArrowRight, Fingerprint, ChevronLeft } from 'lucide-react';
 import './index.css';
 
-export default function Auth() {
+export default function Auth({ onBack }) {
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -47,6 +47,9 @@ export default function Auth() {
                 className="auth-card"
             >
                 <div className="auth-branding-side">
+                    <button className="auth-back-btn" onClick={onBack}>
+                        <ChevronLeft size={14} /> Back
+                    </button>
                     <motion.div 
                         animate={{ rotate: [0, 5, -5, 0] }} 
                         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -99,7 +102,7 @@ export default function Auth() {
                                 >
                                     <label>Username</label>
                                     <div className="auth-input-wrapper">
-                                        <User size={18} className="auth-input-icon" />
+                                        <User size={16} className="auth-input-icon" />
                                         <input
                                             type="text"
                                             placeholder="Your username"

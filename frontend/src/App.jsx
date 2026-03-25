@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motio
 import Lenis from 'lenis';
 import {
   Upload, Download, Key, Baseline, FileText,
-  Image as ImageIcon, Music, Video, Unlock, ShieldClose, ShieldCheck, ChevronDown, ChevronLeft, User, LogOut
+  Image as ImageIcon, Music, Video, Unlock, ShieldClose, ShieldCheck, ChevronDown, ChevronLeft, User, LogOut, Menu, X
 } from 'lucide-react';
 import './index.css';
 import { supabase } from './supabaseClient';
@@ -106,6 +106,7 @@ function App() {
   const [step, setStep] = useState('landing');
   const [action, setAction] = useState(null);
   const [activeTab, setActiveTab] = useState('text');
+  const [isNavOpen, setIsNavOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -163,7 +164,7 @@ function App() {
 
       {/* App Navbar */}
       <div className="app-navbar">
-        <div className="navbar-brand" onClick={() => { setStep('landing'); setAction(null); }} style={{cursor: 'pointer'}}>
+        <div className="navbar-brand" onClick={() => { setStep('landing'); setAction(null); setIsNavOpen(false); }} style={{cursor: 'pointer'}}>
           <ShieldCheck size={20} color="var(--text-primary)" />
           <span className="navbar-title">StealthSpace</span>
         </div>
@@ -184,7 +185,39 @@ function App() {
             <LogOut size={16} color="#ff4444" />
           </button>
         </div>
+
+        <button className="mobile-menu-btn" onClick={() => setIsNavOpen(!isNavOpen)}>
+          {isNavOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isNavOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="mobile-nav-overlay"
+          >
+            <div className="mobile-nav-links">
+              <button className={`mobile-nav-link ${step === 'landing' ? 'active' : ''}`} onClick={() => { setStep('landing'); setAction(null); setIsNavOpen(false); }}>Home</button>
+              <button className={`mobile-nav-link ${action === 'encode' && step !== 'landing' ? 'active' : ''}`} onClick={() => { setAction('encode'); if (step !== 'tool') setStep('type'); setIsNavOpen(false); }}>Encode</button>
+              <button className={`mobile-nav-link ${action === 'decode' && step !== 'landing' ? 'active' : ''}`} onClick={() => { setAction('decode'); if (step !== 'tool') setStep('type'); setIsNavOpen(false); }}>Decode</button>
+            </div>
+            
+            <div className="mobile-nav-footer">
+              <div className="mobile-nav-profile">
+                <User size={16} />
+                <span>{session?.user?.user_metadata?.username || session?.user?.email?.split('@')[0] || 'AGENT'}</span>
+              </div>
+              <button onClick={() => supabase.auth.signOut()} className="btn-outline" style={{ marginTop: '0.5rem', padding: '0.5rem 2rem' }}>
+                <LogOut size={14} style={{ display: 'inline', marginRight: '6px' }} /> Disconnect
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence mode="wait">
         {step === 'landing' && (

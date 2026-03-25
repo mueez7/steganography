@@ -123,6 +123,13 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (session && step === 'auth') {
+      if (action) setStep('type');
+      else setStep('action');
+    }
+  }, [session, step, action]);
+
+  useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -144,16 +151,7 @@ function App() {
     { id: 'video', label: 'Video', icon: <Video size={16} /> },
   ];
 
-  if (!session) {
-    return (
-      <div>
-        <CustomCursor />
-        <div className="pure-black-bg" />
-        <div className="noise-overlay" />
-        <Auth />
-      </div>
-    );
-  }
+  // Removed early return for !session to allow guests to see landing
 
   return (
     <div>
@@ -169,55 +167,75 @@ function App() {
           <span className="navbar-title">StealthSpace</span>
         </div>
         
-        <div className="navbar-links">
-          <button className={`nav-link ${step === 'landing' ? 'active' : ''}`} onClick={() => { setStep('landing'); setAction(null); }}>Home</button>
-          <button className={`nav-link ${action === 'encode' && step !== 'landing' ? 'active' : ''}`} onClick={() => { setAction('encode'); if (step !== 'tool') setStep('type'); }}>Encode</button>
-          <button className={`nav-link ${action === 'decode' && step !== 'landing' ? 'active' : ''}`} onClick={() => { setAction('decode'); if (step !== 'tool') setStep('type'); }}>Decode</button>
-        </div>
+        {session && (
+          <div className="navbar-links">
+            <button className={`nav-link ${step === 'landing' ? 'active' : ''}`} onClick={() => { setStep('landing'); setAction(null); }}>Home</button>
+            <button className={`nav-link ${action === 'encode' && step !== 'landing' ? 'active' : ''}`} onClick={() => { setAction('encode'); if (step !== 'tool') setStep('type'); }}>Encode</button>
+            <button className={`nav-link ${action === 'decode' && step !== 'landing' ? 'active' : ''}`} onClick={() => { setAction('decode'); if (step !== 'tool') setStep('type'); }}>Decode</button>
+          </div>
+        )}
 
-        <div className="navbar-profile">
-          <User size={16} color="var(--text-secondary)" />
-          <span className="profile-name">
-            {session?.user?.user_metadata?.username || session?.user?.email?.split('@')[0] || 'AGENT'}
-          </span>
-          <div className="profile-divider" />
-          <button onClick={() => supabase.auth.signOut()} className="logout-btn" title="Disconnect Session">
-            <LogOut size={16} color="#ff4444" />
+            {session ? (
+              <div className="navbar-profile">
+                <User size={16} color="var(--text-secondary)" />
+                <span className="profile-name">
+                  {session?.user?.user_metadata?.username || session?.user?.email?.split('@')[0] || 'AGENT'}
+                </span>
+                <div className="profile-divider" />
+                <button onClick={() => supabase.auth.signOut()} className="logout-btn" title="Disconnect Session">
+                  <LogOut size={16} color="#ff4444" />
+                </button>
+              </div>
+            ) : (
+              <button className="btn-primary" style={{ marginTop: 0, padding: '8px 16px', width: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => setStep('auth')}>
+                Log In
+              </button>
+            )}
+
+        {session && (
+          <button className="mobile-menu-btn" onClick={() => setIsNavOpen(!isNavOpen)}>
+            {isNavOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
-        </div>
-
-        <button className="mobile-menu-btn" onClick={() => setIsNavOpen(!isNavOpen)}>
-          {isNavOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        )}
       </div>
 
       {/* Mobile Menu Overlay */}
-      <AnimatePresence>
-        {isNavOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="mobile-nav-overlay"
-          >
-            <div className="mobile-nav-links">
-              <button className={`mobile-nav-link ${step === 'landing' ? 'active' : ''}`} onClick={() => { setStep('landing'); setAction(null); setIsNavOpen(false); }}>Home</button>
-              <button className={`mobile-nav-link ${action === 'encode' && step !== 'landing' ? 'active' : ''}`} onClick={() => { setAction('encode'); if (step !== 'tool') setStep('type'); setIsNavOpen(false); }}>Encode</button>
-              <button className={`mobile-nav-link ${action === 'decode' && step !== 'landing' ? 'active' : ''}`} onClick={() => { setAction('decode'); if (step !== 'tool') setStep('type'); setIsNavOpen(false); }}>Decode</button>
-            </div>
-            
-            <div className="mobile-nav-footer">
-              <div className="mobile-nav-profile">
-                <User size={16} />
-                <span>{session?.user?.user_metadata?.username || session?.user?.email?.split('@')[0] || 'AGENT'}</span>
+      {session && (
+        <AnimatePresence>
+          {isNavOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="mobile-nav-overlay"
+            >
+              <div className="mobile-nav-links">
+                <button className={`mobile-nav-link ${step === 'landing' ? 'active' : ''}`} onClick={() => { setStep('landing'); setAction(null); setIsNavOpen(false); }}>Home</button>
+                <button className={`mobile-nav-link ${action === 'encode' && step !== 'landing' ? 'active' : ''}`} onClick={() => { setAction('encode'); if (step !== 'tool') setStep('type'); setIsNavOpen(false); }}>Encode</button>
+                <button className={`mobile-nav-link ${action === 'decode' && step !== 'landing' ? 'active' : ''}`} onClick={() => { setAction('decode'); if (step !== 'tool') setStep('type'); setIsNavOpen(false); }}>Decode</button>
               </div>
-              <button onClick={() => supabase.auth.signOut()} className="btn-outline" style={{ marginTop: '0.5rem', padding: '0.5rem 2rem' }}>
-                <LogOut size={14} style={{ display: 'inline', marginRight: '6px' }} /> Disconnect
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                
+                <div className="mobile-nav-footer">
+                  {session ? (
+                    <>
+                      <div className="mobile-nav-profile">
+                        <User size={16} />
+                        <span>{session?.user?.user_metadata?.username || session?.user?.email?.split('@')[0] || 'AGENT'}</span>
+                      </div>
+                      <button onClick={() => supabase.auth.signOut()} className="btn-outline" style={{ marginTop: '0.5rem', padding: '0.5rem 2rem' }}>
+                        <LogOut size={14} style={{ display: 'inline', marginRight: '6px' }} /> Disconnect
+                      </button>
+                    </>
+                  ) : (
+                    <button className="btn-primary" onClick={() => { setStep('auth'); setIsNavOpen(false); }} style={{ padding: '0.8rem 3rem' }}>
+                      Log In
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+      )}
 
       <AnimatePresence mode="wait">
         {step === 'landing' && (
@@ -228,7 +246,7 @@ function App() {
                 <p className="hero-subtitle" style={{ marginBottom: '2.5rem' }}>
                   Advanced, secure & minimal multimodal steganography suite. Hide any data seamlessly.
                 </p>
-                <button className="btn-primary" style={{ maxWidth: '250px' }} onClick={() => setStep('action')}>
+                <button className="btn-primary" style={{ maxWidth: '250px' }} onClick={() => { if (!session) setStep('auth'); else setStep('action'); }}>
                   Get Started
                 </button>
               </motion.div>
@@ -259,12 +277,12 @@ function App() {
               <button className="back-btn" onClick={() => setStep('landing')}><ChevronLeft size={16} /> Back</button>
               <h2 className="step-title">Select Operation</h2>
               <div className="action-grid">
-                <button className="action-card" onClick={() => { setAction('encode'); setStep('type'); }}>
+                <button className="action-card" onClick={() => { setAction('encode'); if (!session) setStep('auth'); else setStep('type'); }}>
                   <Unlock size={36} color="var(--text-primary)" style={{ marginBottom: '1.2rem' }} />
                   <h3>Encode</h3>
                   <p>Hide secret data within a file</p>
                 </button>
-                <button className="action-card" onClick={() => { setAction('decode'); setStep('type'); }}>
+                <button className="action-card" onClick={() => { setAction('decode'); if (!session) setStep('auth'); else setStep('type'); }}>
                   <Baseline size={36} color="var(--text-primary)" style={{ marginBottom: '1.2rem' }} />
                   <h3>Decode</h3>
                   <p>Extract hidden data from a stego file</p>
@@ -309,6 +327,15 @@ function App() {
                 {action === 'encode' ? <EncodeSection type={activeTab} /> : <DecodeSection type={activeTab} />}
               </motion.div>
             </AnimatePresence>
+          </motion.div>
+        )}
+
+        {step === 'auth' && (
+          <motion.div key="auth" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="step-container container" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '1rem', overflowY: 'auto' }}>
+            <div style={{ maxWidth: '900px', width: '100%', position: 'relative' }}>
+              <button className="back-btn" style={{ position: 'absolute', top: '-2.5rem', left: '0', zIndex: 11 }} onClick={() => setStep('landing')}><ChevronLeft size={16} /> Back</button>
+              <Auth />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from './supabaseClient';
-import { Lock, Mail, KeyRound, ShieldClose, User } from 'lucide-react';
+import { Lock, Mail, KeyRound, ShieldClose, User, ArrowRight, Fingerprint } from 'lucide-react';
+import './index.css';
 
 export default function Auth() {
     const [loading, setLoading] = useState(false);
@@ -10,11 +11,13 @@ export default function Auth() {
     const [username, setUsername] = useState('');
     const [isSignUp, setIsSignUp] = useState(false);
     const [errorMsg, setErrorMsg] = useState(null);
+    const [successMsg, setSuccessMsg] = useState(null);
 
     const handleAuth = async (e) => {
         e.preventDefault();
         setLoading(true);
         setErrorMsg(null);
+        setSuccessMsg(null);
         try {
             if (isSignUp) {
                 const { error } = await supabase.auth.signUp({
@@ -23,7 +26,7 @@ export default function Auth() {
                     options: { data: { username } }
                 });
                 if (error) throw error;
-                alert("Check your email for the login link!");
+                setSuccessMsg("Clearance granted. Check your secure inbox for the verification link.");
             } else {
                 const { error } = await supabase.auth.signInWithPassword({ email, password });
                 if (error) throw error;
@@ -36,159 +39,136 @@ export default function Auth() {
     };
 
     return (
-        <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', position: 'relative', zIndex: 10 }}>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{
-                width: '100%',
-                maxWidth: '420px',
-                background: '#0a0a0a',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderRadius: '16px',
-                padding: '2.5rem',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
-            }}>
-
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '1.5rem' }}>
-                    <Lock size={20} color="#fff" />
-                    <h2 style={{ fontSize: '1.4rem', fontWeight: '500', color: '#fff', margin: 0 }}>
-                        {isSignUp ? "Create Access" : "Secure Login"}
-                    </h2>
+        <div className="auth-container">
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                className="auth-card"
+            >
+                <div className="auth-branding-side">
+                    <motion.div 
+                        animate={{ rotate: [0, 5, -5, 0] }} 
+                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                        className="auth-branding-icon"
+                    >
+                        <Lock size={32} color="var(--text-primary)" />
+                    </motion.div>
+                    <h2 className="auth-branding-title">StealthSpace</h2>
+                    <p className="auth-branding-subtitle">
+                        {isSignUp 
+                            ? "Join our secure platform to start hiding your data seamlessly." 
+                            : "Welcome back. Log in to access your secure covert tools."}
+                    </p>
                 </div>
 
-                {errorMsg && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255, 0, 0, 0.1)', color: '#ff4444', padding: '12px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
-                        <ShieldClose size={16} />
-                        {errorMsg}
-                    </motion.div>
-                )}
+                <div className="auth-form-side">
+                    <div className="auth-header">
+                        <h2 className="auth-title">
+                            {isSignUp ? "Create an Account" : "Log In"}
+                        </h2>
+                        <p className="auth-subtitle">
+                            {isSignUp ? "Sign up to get started." : "Enter your details to proceed."}
+                        </p>
+                    </div>
 
-                <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <AnimatePresence mode="wait">
+                        {errorMsg && (
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="auth-alert error">
+                                <ShieldClose size={16} style={{ flexShrink: 0 }} />
+                                <span>{errorMsg}</span>
+                            </motion.div>
+                        )}
+                        {successMsg && (
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="auth-alert success">
+                                <Fingerprint size={16} style={{ flexShrink: 0 }} />
+                                <span>{successMsg}</span>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
-                    {isSignUp && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            <label style={{ fontSize: '0.7rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#888' }}>
-                                Agent Handle
-                            </label>
-                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                                <User size={16} style={{ position: 'absolute', left: '12px', color: '#888' }} />
+                    <form onSubmit={handleAuth} className="auth-form">
+                        <AnimatePresence>
+                            {isSignUp && (
+                                <motion.div 
+                                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                    animate={{ opacity: 1, height: 'auto', marginTop: '1rem' }}
+                                    exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                                    style={{ overflow: 'hidden' }}
+                                    className="auth-input-group"
+                                >
+                                    <label>Username</label>
+                                    <div className="auth-input-wrapper">
+                                        <User size={18} className="auth-input-icon" />
+                                        <input
+                                            type="text"
+                                            placeholder="Your username"
+                                            value={username}
+                                            onChange={(e) => setUsername(e.target.value)}
+                                            required={isSignUp}
+                                            className="auth-input"
+                                        />
+                                        <div className="auth-input-focus-bg"></div>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        <div className="auth-input-group" style={{ marginTop: isSignUp ? '0' : '1rem' }}>
+                            <label>Email Address</label>
+                            <div className="auth-input-wrapper">
+                                <Mail size={18} className="auth-input-icon" />
                                 <input
-                                    type="text"
-                                    placeholder="Cipher"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
+                                    type="email"
+                                    placeholder="you@example.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    style={{
-                                        width: '100%',
-                                        background: '#fff',
-                                        border: 'none',
-                                        borderRadius: '6px',
-                                        padding: '12px 12px 12px 38px',
-                                        fontSize: '0.95rem',
-                                        color: '#000',
-                                        outline: 'none',
-                                        fontFamily: 'inherit'
-                                    }}
+                                    className="auth-input"
                                 />
+                                <div className="auth-input-focus-bg"></div>
                             </div>
                         </div>
-                    )}
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <label style={{ fontSize: '0.7rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#888' }}>
-                            Agent Email
-                        </label>
-                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                            <Mail size={16} style={{ position: 'absolute', left: '12px', color: '#888' }} />
-                            <input
-                                type="email"
-                                placeholder="agent@stealth.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                style={{
-                                    width: '100%',
-                                    background: '#fff',
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    padding: '12px 12px 12px 38px',
-                                    fontSize: '0.95rem',
-                                    color: '#000',
-                                    outline: 'none',
-                                    fontFamily: 'inherit'
-                                }}
-                            />
+                        <div className="auth-input-group">
+                            <label>Password</label>
+                            <div className="auth-input-wrapper">
+                                <KeyRound size={18} className="auth-input-icon" />
+                                <input
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                    className="auth-input"
+                                />
+                                <div className="auth-input-focus-bg"></div>
+                            </div>
                         </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="auth-submit-btn"
+                        >
+                            <span>{loading ? "Please wait..." : (isSignUp ? "Sign Up" : "Log In")}</span>
+                            <ArrowRight size={18} className={loading ? "spin-icon" : "slide-icon"} />
+                        </button>
+                    </form>
+
+                    <div className="auth-footer">
+                        <p>
+                            {isSignUp ? "Already have an account?" : "Don't have an account?"}
+                            <button
+                                type="button"
+                                onClick={() => { setIsSignUp(!isSignUp); setErrorMsg(null); setSuccessMsg(null); }}
+                                className="auth-switch-btn"
+                            >
+                                {isSignUp ? "Log In" : "Sign Up"}
+                            </button>
+                        </p>
                     </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <label style={{ fontSize: '0.7rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#888' }}>
-                            Master Password
-                        </label>
-                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                            <KeyRound size={16} style={{ position: 'absolute', left: '12px', color: '#888' }} />
-                            <input
-                                type="password"
-                                placeholder="••••••••"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                style={{
-                                    width: '100%',
-                                    background: '#fff',
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    padding: '12px 12px 12px 38px',
-                                    fontSize: '0.95rem',
-                                    color: '#000',
-                                    outline: 'none',
-                                    fontFamily: 'inherit'
-                                }}
-                            />
-                        </div>
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        style={{
-                            marginTop: '1rem',
-                            width: '100%',
-                            background: '#fff',
-                            color: '#000',
-                            border: 'none',
-                            borderRadius: '8px',
-                            padding: '14px',
-                            fontSize: '1rem',
-                            fontWeight: '600',
-                            cursor: loading ? 'not-allowed' : 'pointer',
-                            opacity: loading ? 0.8 : 1,
-                            fontFamily: 'inherit',
-                            transition: 'background 0.2s'
-                        }}
-                    >
-                        {loading ? "Authenticating..." : (isSignUp ? "Sign Up" : "Log In")}
-                    </button>
-                </form>
-
-                <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.9rem', color: '#888' }}>
-                    {isSignUp ? "Already have clearance? " : "Need stealth access? "}
-                    <button
-                        type="button"
-                        onClick={() => setIsSignUp(!isSignUp)}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            color: '#fff',
-                            cursor: 'pointer',
-                            textDecoration: 'underline',
-                            fontWeight: '500',
-                            padding: 0,
-                            fontSize: '0.9rem'
-                        }}
-                    >
-                        {isSignUp ? "Log In" : "Sign Up"}
-                    </button>
-                </p>
-
+                </div>
             </motion.div>
         </div>
     );

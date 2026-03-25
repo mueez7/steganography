@@ -101,8 +101,8 @@ export default function Auth({ onBack }) {
                                     className="auth-input-group"
                                 >
                                     <label>Username</label>
-                                    <div className="auth-input-wrapper">
-                                        <User size={16} className="auth-input-icon" />
+                                    <div className="auth-input-wrapper" style={{ position: 'relative' }}>
+                                        <User size={16} className="auth-input-icon" style={{ position: 'absolute', left: '1rem', zIndex: 3, pointerEvents: 'none', color: '#666' }} />
                                         <input
                                             type="text"
                                             placeholder="Your username"
@@ -110,6 +110,7 @@ export default function Auth({ onBack }) {
                                             onChange={(e) => setUsername(e.target.value)}
                                             required={isSignUp}
                                             className="auth-input"
+                                            style={{ paddingLeft: '3rem' }}
                                         />
                                         <div className="auth-input-focus-bg"></div>
                                     </div>

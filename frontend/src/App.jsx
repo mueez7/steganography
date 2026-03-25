@@ -161,20 +161,27 @@ function App() {
       <div className="pure-black-bg" />
       <div className="noise-overlay" />
 
-      {/* Profile Widget */}
-      <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', zIndex: 100 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', padding: '8px 16px', borderRadius: '50px', backdropFilter: 'blur(10px)' }}>
+      {/* App Navbar */}
+      <div className="app-navbar">
+        <div className="navbar-brand" onClick={() => { setStep('landing'); setAction(null); }} style={{cursor: 'pointer'}}>
+          <ShieldCheck size={20} color="var(--text-primary)" />
+          <span className="navbar-title">StealthSpace</span>
+        </div>
+        
+        <div className="navbar-links">
+          <button className={`nav-link ${step === 'landing' ? 'active' : ''}`} onClick={() => { setStep('landing'); setAction(null); }}>Home</button>
+          <button className={`nav-link ${action === 'encode' && step !== 'landing' ? 'active' : ''}`} onClick={() => { setAction('encode'); if (step !== 'tool') setStep('type'); }}>Encode</button>
+          <button className={`nav-link ${action === 'decode' && step !== 'landing' ? 'active' : ''}`} onClick={() => { setAction('decode'); if (step !== 'tool') setStep('type'); }}>Decode</button>
+        </div>
+
+        <div className="navbar-profile">
           <User size={16} color="var(--text-secondary)" />
-          <span style={{ fontSize: '0.85rem', color: '#fff', fontWeight: '500', letterSpacing: '0.05em' }}>
+          <span className="profile-name">
             {session?.user?.user_metadata?.username || session?.user?.email?.split('@')[0] || 'AGENT'}
           </span>
-          <div style={{ width: '1px', height: '14px', background: 'rgba(255,255,255,0.2)', margin: '0 4px' }} />
-          <button
-            onClick={() => supabase.auth.signOut()}
-            style={{ background: 'transparent', border: 'none', padding: 0, display: 'flex', cursor: 'pointer' }}
-            title="Disconnect Session"
-          >
-            <LogOut size={16} color="#ff4444" style={{ opacity: 0.8, transition: 'opacity 0.2s' }} onMouseOver={(e) => e.target.style.opacity = 1} onMouseOut={(e) => e.target.style.opacity = 0.8} />
+          <div className="profile-divider" />
+          <button onClick={() => supabase.auth.signOut()} className="logout-btn" title="Disconnect Session">
+            <LogOut size={16} color="#ff4444" />
           </button>
         </div>
       </div>
@@ -235,10 +242,10 @@ function App() {
         )}
 
         {step === 'type' && (
-          <motion.div key="type" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="step-container container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <motion.div key={`type-${action}`} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="step-container container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <div style={{ maxWidth: '750px', margin: '0 auto', width: '100%' }}>
               <button className="back-btn" onClick={() => setStep('action')}><ChevronLeft size={16} /> Back</button>
-              <h2 className="step-title">Select Medium</h2>
+              <h2 className="step-title">Select Medium to {action === 'encode' ? 'Encode' : 'Decode'}</h2>
               <div className="type-grid">
                 {tabs.map((tab) => (
                   <button key={tab.id} className="type-card" onClick={() => { setActiveTab(tab.id); setStep('tool'); }}>

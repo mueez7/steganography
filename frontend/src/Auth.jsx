@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from './supabaseClient';
-import { Lock, Mail, KeyRound, ShieldClose, User, ArrowRight, Fingerprint, ChevronLeft } from 'lucide-react';
+import { Lock, Mail, KeyRound, ShieldClose, User, ArrowRight, Fingerprint, ChevronLeft, Eye, EyeOff } from 'lucide-react';
 import './index.css';
 
 export default function Auth({ onBack }) {
@@ -12,6 +12,7 @@ export default function Auth({ onBack }) {
     const [isSignUp, setIsSignUp] = useState(false);
     const [errorMsg, setErrorMsg] = useState(null);
     const [successMsg, setSuccessMsg] = useState(null);
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleAuth = async (e) => {
         e.preventDefault();
@@ -136,16 +137,39 @@ export default function Auth({ onBack }) {
 
                         <div className="auth-input-group">
                             <label>Password</label>
-                            <div className="auth-input-wrapper">
+                            <div className="auth-input-wrapper" style={{ position: 'relative' }}>
                                 <KeyRound size={18} className="auth-input-icon" />
                                 <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                     className="auth-input"
+                                    style={{ paddingRight: '3rem' }}
                                 />
+                                <button
+                                    type="button"
+                                    className="password-toggle-btn"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    style={{
+                                        position: 'absolute',
+                                        right: '1rem',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        background: 'none',
+                                        border: 'none',
+                                        padding: 0,
+                                        cursor: 'pointer',
+                                        color: 'var(--text-secondary, #666)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        zIndex: 10
+                                    }}
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
                                 <div className="auth-input-focus-bg"></div>
                             </div>
                         </div>

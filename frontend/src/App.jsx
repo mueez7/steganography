@@ -347,19 +347,15 @@ function App() {
 function EncodeSection({ type }) {
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState('');
-  const [vidKey, setVidKey] = useState('');
+  const [pin, setPin] = useState('');
   const [vidFrame, setVidFrame] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
   const handleEncode = async () => {
-    if (!file || !message) {
-      setError("Please provide both file and message");
-      return;
-    }
-    if (type === 'video' && !vidKey) {
-      setError("Video steganography requires a key");
+    if (!file || !message || !pin) {
+      setError("Please provide file, message, and PIN");
       return;
     }
 
@@ -370,8 +366,8 @@ function EncodeSection({ type }) {
     const formData = new FormData();
     formData.append('cover', file);
     formData.append('message', message);
+    if (pin) formData.append('pin', pin);
     if (type === 'video') {
-      formData.append('key_str', vidKey);
       formData.append('frame_num', vidFrame.toString());
     }
 
@@ -444,6 +440,18 @@ function EncodeSection({ type }) {
         />
       </div>
 
+      <div className="form-group">
+        <label>Encryption PIN (Required)</label>
+        <div className="input-icon-wrapper">
+          <Key size={14} />
+          <input
+            type="password"
+            placeholder="Secret PIN"
+            value={pin}
+            onChange={(e) => setPin(e.target.value)}
+          />
+        </div>
+      </div>
       <AnimatePresence>
         {type === 'video' && (
           <motion.div
@@ -452,18 +460,6 @@ function EncodeSection({ type }) {
             exit={{ opacity: 0, height: 0 }}
             style={{ overflow: 'hidden' }}
           >
-            <div className="form-group">
-              <label>Encryption Key</label>
-              <div className="input-icon-wrapper">
-                <Key size={14} />
-                <input
-                  type="text"
-                  placeholder="Secret key"
-                  value={vidKey}
-                  onChange={(e) => setVidKey(e.target.value)}
-                />
-              </div>
-            </div>
             <div className="form-group">
               <label>Embed at Frame</label>
               <input
@@ -477,7 +473,7 @@ function EncodeSection({ type }) {
         )}
       </AnimatePresence>
 
-      <button className="btn-primary" onClick={handleEncode} disabled={loading}>
+      <button className="btn-primary" onClick={handleEncode} disabled={loading || !file || !message || !pin}>
         Embed & Download
       </button>
 
@@ -501,19 +497,15 @@ function EncodeSection({ type }) {
 
 function DecodeSection({ type }) {
   const [file, setFile] = useState(null);
-  const [vidKey, setVidKey] = useState('');
+  const [pin, setPin] = useState('');
   const [vidFrame, setVidFrame] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState('');
 
   const handleDecode = async () => {
-    if (!file) {
-      setError("Please provide a stego file");
-      return;
-    }
-    if (type === 'video' && !vidKey) {
-      setError("Video steganography requires a key");
+    if (!file || !pin) {
+      setError("Please provide a stego file and PIN");
       return;
     }
 
@@ -523,8 +515,8 @@ function DecodeSection({ type }) {
 
     const formData = new FormData();
     formData.append('stego_file', file);
+    if (pin) formData.append('pin', pin);
     if (type === 'video') {
-      formData.append('key_str', vidKey);
       formData.append('frame_num', vidFrame.toString());
     }
 
@@ -573,6 +565,18 @@ function DecodeSection({ type }) {
         </div>
       </div>
 
+      <div className="form-group">
+        <label>Decryption PIN (Required)</label>
+        <div className="input-icon-wrapper">
+          <Key size={14} />
+          <input
+            type="password"
+            placeholder="Secret PIN"
+            value={pin}
+            onChange={(e) => setPin(e.target.value)}
+          />
+        </div>
+      </div>
       <AnimatePresence>
         {type === 'video' && (
           <motion.div
@@ -581,18 +585,6 @@ function DecodeSection({ type }) {
             exit={{ opacity: 0, height: 0 }}
             style={{ overflow: 'hidden' }}
           >
-            <div className="form-group">
-              <label>Decryption Key</label>
-              <div className="input-icon-wrapper">
-                <Key size={14} />
-                <input
-                  type="text"
-                  placeholder="Secret key"
-                  value={vidKey}
-                  onChange={(e) => setVidKey(e.target.value)}
-                />
-              </div>
-            </div>
             <div className="form-group">
               <label>Check at Frame</label>
               <input
@@ -606,7 +598,7 @@ function DecodeSection({ type }) {
         )}
       </AnimatePresence>
 
-      <button className="btn-outline" onClick={handleDecode} disabled={loading}>
+      <button className="btn-outline" onClick={handleDecode} disabled={loading || !file || !pin}>
         Extract Hidden Payload
       </button>
 

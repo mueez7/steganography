@@ -52,11 +52,11 @@ def save_upload_file(upload_file: UploadFile) -> str:
     return str(file_path)
 
 @app.post("/encode/text")
-async def encode_text(cover: UploadFile = File(...), message: str = Form(...)):
+async def encode_text(cover: UploadFile = File(...), message: str = Form(...), pin: str = Form(None)):
     cover_path = save_upload_file(cover)
     stego_path = str(UPLOAD_DIR / f"stego_{uuid.uuid4()}.txt")
     try:
-        res = stego.txt_encode(message, cover_path, stego_path)
+        res = stego.txt_encode(message, cover_path, stego_path, pin)
         task = BackgroundTask(cleanup_files, cover_path, stego_path)
         return FileResponse(stego_path, filename="stego_text.txt", background=task)
     except Exception as e:
@@ -64,10 +64,10 @@ async def encode_text(cover: UploadFile = File(...), message: str = Form(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/decode/text")
-async def decode_text(stego_file: UploadFile = File(...)):
+async def decode_text(stego_file: UploadFile = File(...), pin: str = Form(None)):
     stego_path = save_upload_file(stego_file)
     try:
-        res = stego.decode_txt_data(stego_path)
+        res = stego.decode_txt_data(stego_path, pin)
         cleanup_files(stego_path)
         return {"decoded_message": res}
     except Exception as e:
@@ -75,11 +75,11 @@ async def decode_text(stego_file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/encode/image")
-async def encode_image(cover: UploadFile = File(...), message: str = Form(...)):
+async def encode_image(cover: UploadFile = File(...), message: str = Form(...), pin: str = Form(None)):
     cover_path = save_upload_file(cover)
     stego_path = str(UPLOAD_DIR / f"stego_{uuid.uuid4()}.png")
     try:
-        res = stego.encode_img_data(cover_path, message, stego_path)
+        res = stego.encode_img_data(cover_path, message, stego_path, pin)
         task = BackgroundTask(cleanup_files, cover_path, stego_path)
         return FileResponse(stego_path, filename="stego_image.png", background=task)
     except Exception as e:
@@ -87,10 +87,10 @@ async def encode_image(cover: UploadFile = File(...), message: str = Form(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/decode/image")
-async def decode_image(stego_file: UploadFile = File(...)):
+async def decode_image(stego_file: UploadFile = File(...), pin: str = Form(None)):
     stego_path = save_upload_file(stego_file)
     try:
-        res = stego.decode_img_data(stego_path)
+        res = stego.decode_img_data(stego_path, pin)
         cleanup_files(stego_path)
         return {"decoded_message": res}
     except Exception as e:
@@ -98,11 +98,11 @@ async def decode_image(stego_file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/encode/audio")
-async def encode_audio(cover: UploadFile = File(...), message: str = Form(...)):
+async def encode_audio(cover: UploadFile = File(...), message: str = Form(...), pin: str = Form(None)):
     cover_path = save_upload_file(cover)
     stego_path = str(UPLOAD_DIR / f"stego_{uuid.uuid4()}.wav")
     try:
-        res = stego.encode_aud_data(cover_path, message, stego_path)
+        res = stego.encode_aud_data(cover_path, message, stego_path, pin)
         task = BackgroundTask(cleanup_files, cover_path, stego_path)
         return FileResponse(stego_path, filename="stego_audio.wav", background=task)
     except Exception as e:
@@ -110,10 +110,10 @@ async def encode_audio(cover: UploadFile = File(...), message: str = Form(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/decode/audio")
-async def decode_audio(stego_file: UploadFile = File(...)):
+async def decode_audio(stego_file: UploadFile = File(...), pin: str = Form(None)):
     stego_path = save_upload_file(stego_file)
     try:
-        res = stego.decode_aud_data(stego_path)
+        res = stego.decode_aud_data(stego_path, pin)
         cleanup_files(stego_path)
         return {"decoded_message": res}
     except Exception as e:
@@ -124,13 +124,13 @@ async def decode_audio(stego_file: UploadFile = File(...)):
 async def encode_video(
     cover: UploadFile = File(...), 
     message: str = Form(...), 
-    key_str: str = Form(...), 
+    pin: str = Form(None), 
     frame_num: int = Form(...)
 ):
     cover_path = save_upload_file(cover)
     stego_path = str(UPLOAD_DIR / f"stego_{uuid.uuid4()}.avi")
     try:
-        res = stego.encode_vid_data(cover_path, message, stego_path, frame_num, key_str)
+        res = stego.encode_vid_data(cover_path, message, stego_path, frame_num, pin or "default")
         task = BackgroundTask(cleanup_files, cover_path, stego_path)
         return FileResponse(stego_path, filename="stego_video.avi", background=task)
     except Exception as e:
@@ -140,12 +140,12 @@ async def encode_video(
 @app.post("/decode/video")
 async def decode_video(
     stego_file: UploadFile = File(...), 
-    key_str: str = Form(...), 
+    pin: str = Form(None), 
     frame_num: int = Form(...)
 ):
     stego_path = save_upload_file(stego_file)
     try:
-        res = stego.decode_vid_data(stego_path, frame_num, key_str)
+        res = stego.decode_vid_data(stego_path, frame_num, pin or "default")
         cleanup_files(stego_path)
         return {"decoded_message": res}
     except Exception as e:

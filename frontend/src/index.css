@@ -365,25 +365,30 @@ h6,
   color: var(--text-primary);
 }
 
+input[type=password],
 input[type=text],
 input[type=number],
 textarea {
   width: 100%;
   padding: 0.9rem 1.1rem;
-  background: transparent;
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   color: var(--text-primary);
   font-family: inherit;
   font-size: 0.95rem;
   transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
 }
 
+input[type=password]:focus,
 input[type=text]:focus,
 input[type=number]:focus,
 textarea:focus {
   outline: none;
+  background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
 }
 
 textarea {
@@ -401,6 +406,8 @@ textarea {
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-secondary);
+  z-index: 10;
+  pointer-events: none;
 }
 
 .input-icon-wrapper input {
@@ -433,7 +440,11 @@ textarea {
 }
 
 .btn-primary:disabled {
-  opacity: 0.5;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.3);
+  cursor: not-allowed !important;
+  opacity: 1;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .btn-outline {
@@ -455,7 +466,11 @@ textarea {
 }
 
 .btn-outline:disabled {
-  opacity: 0.5;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: not-allowed !important;
+  opacity: 1;
 }
 
 /* processing overlay animations */

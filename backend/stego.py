@@ -6,7 +6,9 @@ import os
 # --- Core Logic Functions ---
 
 # Text Steganography
-def txt_encode(text, cover_file, stego_file):
+def txt_encode(text, cover_file, stego_file, pin=None):
+    if pin:
+        text = encryption(text, pin)
     l=len(text)
     i=0
     add=''
@@ -66,7 +68,7 @@ def BinaryToDecimal(binary):
     string = int(binary, 2)
     return string
 
-def decode_txt_data(stego_file):
+def decode_txt_data(stego_file, pin=None):
     ZWC_reverse={u'\u200C':"00",u'\u202C':"01",u'\u202D':"11",u'\u200E':"10"}
     file4= open(stego_file,"r", encoding="utf-8", errors="ignore")
     temp=''
@@ -101,10 +103,12 @@ def decode_txt_data(stego_file):
         if(t3=='0110'):
             decimal_data = BinaryToDecimal(t4)
             final+=chr((decimal_data ^ 170) + 48)
-        elif(t3=='0011'):
+        if(t3=='0011'):
             decimal_data = BinaryToDecimal(t4)
             final+=chr((decimal_data ^ 170) - 48)
     file4.close()
+    if pin:
+        final = decryption(final, pin)
     return final
 
 # Image Steganography
@@ -119,7 +123,9 @@ def msgtobinary(msg):
         raise TypeError("Input type is not supported in this function")
     return result
 
-def encode_img_data(img_path, data, stego_path):
+def encode_img_data(img_path, data, stego_path, pin=None):
+    if pin:
+        data = encryption(data, pin)
     img = cv2.imread(img_path)
     if img is None:
         raise ValueError("Image not found")
@@ -150,7 +156,7 @@ def encode_img_data(img_path, data, stego_path):
     cv2.imwrite(stego_path,img)
     return "Encoded the data successfully in the Image."
 
-def decode_img_data(img_path):
+def decode_img_data(img_path, pin=None):
     img = cv2.imread(img_path)
     if img is None:
         raise ValueError("Image not found")
@@ -167,11 +173,16 @@ def decode_img_data(img_path):
             for byte in total_bytes:
                 decoded_data += chr(int(byte, 2))
                 if decoded_data[-5:] == "*^*^*": 
-                    return decoded_data[:-5]
+                    res = decoded_data[:-5]
+                    if pin:
+                        res = decryption(res, pin)
+                    return res
     return "No hidden data found."
 
 # Audio Steganography
-def encode_aud_data(audio_file, data, stego_file):
+def encode_aud_data(audio_file, data, stego_file, pin=None):
+    if pin:
+        data = encryption(data, pin)
     song = wave.open(audio_file, mode='rb')
     nframes=song.getnframes()
     frames=song.readframes(nframes)
@@ -204,7 +215,7 @@ def encode_aud_data(audio_file, data, stego_file):
     song.close()
     return "Encoded the data successfully in the audio file."
 
-def decode_aud_data(stego_file):
+def decode_aud_data(stego_file, pin=None):
     song = wave.open(stego_file, mode='rb')
     nframes=song.getnframes()
     frames=song.readframes(nframes)
@@ -228,7 +239,10 @@ def decode_aud_data(stego_file):
             decoded_data += chr(int(byte, 2))
             if decoded_data[-5:] == "*^*^*":
                 song.close()
-                return decoded_data[:-5]
+                res = decoded_data[:-5]
+                if pin:
+                    res = decryption(res, pin)
+                return res
     song.close()
     return "No hidden data found."
 
@@ -259,6 +273,7 @@ def preparing_key_array(s):
     return [ord(c) for c in s]
 
 def encryption(plaintext, key_str):
+    plaintext = "VALID:" + plaintext
     key=preparing_key_array(key_str)
     S=KSA(key)
     keystream=np.array(PRGA(S,len(plaintext)))
@@ -278,7 +293,11 @@ def decryption(ciphertext, key_str):
     dtext=''
     for c in decoded:
         dtext=dtext+chr(c)
-    return dtext
+    
+    if dtext.startswith("VALID:"):
+        return dtext[6:]
+    else:
+        raise ValueError("Incorrect PIN!!!")
 
 def embed(frame, data, key_str):
     data=encryption(data, key_str)
